@@ -1,4 +1,6 @@
-# 프로젝트 설정 (참고:https://velopert.com/2448)
+# 프로젝트 설정
+
+[사이트](https://velopert.com/2448)
 
 `npm -y init`
 
