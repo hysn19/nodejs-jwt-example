@@ -1,4 +1,4 @@
-# 프로젝트 설정
+# 프로젝트 설정 (참고:https://velopert.com/2448)
 
 `npm -y init`
 
@@ -86,4 +86,87 @@ User.methods.assignAdmin = function() {
 }
 
 module.exports = mongoose.model('User', User)
+```
+
+- create 메소드는 새 유저를 생성합니다. 원래는 이 메소드처럼 비밀번호를 그대로 문자열 형태로 저장하면 보안적으로 매우 나쁩니다. 일단 지금은 배우는 과정이니 간단하게 문자열로 저장을 하지만, 포스트의 후반부에서는 비밀번호를 해쉬하여 저장하도록 하겠습니다
+- findOneByUsername 메소드는 username 값을 사용하여 유저를 찾습니다
+- verify 메소드는 비밀번호가 정확한지 확인을 합니다. 지금은 그냥 === 를 사용해서 비교 후 결과를 반환하지만 포스트 후반부에서는 해쉬를 확인하여 결과를 반환하겠습니다
+- assignAdmin 메소드는 유저를 관리자 계정으로 설정해줍니다. 저희 예제 프로젝트에서는, 가장 처음으로 가입한 사람과, 관리자가 나중에 API 를 사용하여 지정한사람이 관리자 권한을 부여 받습니다.
+
+## mongodb
+
+> mongodb 설정은 생략
+
+## config.js 작성하기
+
+> config.js
+
+- mongodb는 mlab으로 호스팅하여 사용함.
+
+```js
+module.exports = {
+  secret: 'SeCrEtKeYfOrHaShInG',
+  mongodbUri: 'mongodb://velopert:password@ds127428.mlab.com:27428/jwt-tutorial'
+}
+```
+
+## 서버코드 작성하기
+
+> app.js
+
+```javascript
+/* =======================
+    LOAD THE DEPENDENCIES
+==========================*/
+const express = require('express')
+const bodyParser = require('body-parser')
+const morgan = require('morgan')
+const mongoose = require('mongoose')
+
+/* =======================
+    LOAD THE CONFIG
+==========================*/
+const config = require('./config')
+const port = process.env.PORT || 3000
+
+/* =======================
+    EXPRESS CONFIGURATION
+==========================*/
+const app = express()
+
+// parse JSON and url-encoded query
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+
+// print the request log on console
+app.use(morgan('dev'))
+
+// set the secret key variable for jwt
+app.set('jwt-secret', config.secret)
+
+// index page, just for testing
+app.get('/', (req, res) => {
+  res.send('Hello JWT')
+})
+
+// open the server
+app.listen(port, () => {
+  console.log(`Express is running on port ${port}`)
+})
+
+/* =======================
+    CONNECT TO MONGODB SERVER
+==========================*/
+mongoose.connect(config.mongodbUri)
+const db = mongoose.connection
+db.on('error', console.error)
+db.once('open', () => {
+  console.log('connected to mongodb server')
+})
+```
+
+```
+> node app.js
+Express is running on port 3000
+connected to mongodb server
 ```
